@@ -30,7 +30,7 @@ public class EnemyAI : MonoBehaviour
     [Header("--- VISION (EYES) ---")]
     [SerializeField] private float viewDistance = 15f;
 
-    [Range(0f, 360f)] [SerializeField] private float viewAngle = 90f;
+    [Range(0f, 360f)][SerializeField] private float viewAngle = 90f;
     [Tooltip("Camada (Layer) do cenário que bloqueia a visão do monstro (ex: Paredes).")]
     [SerializeField] private LayerMask obstacleMask;
 
@@ -38,11 +38,6 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private LayerMask playerMask;
 
     // Estados da IA
-    private enum EnemyState { Patrol, NoticingPlayer, Chasing }
-    private EnemyState currentState = EnemyState.Patrol;
-
-    private bool isChasingCoroutineRunning = false;
-
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
