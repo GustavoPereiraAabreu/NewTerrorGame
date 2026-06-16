@@ -43,18 +43,12 @@ public class JumpscareController : MonoBehaviour
 
     void LateUpdate()
     {
-        if (lockCamera && lookTarget)
-        {
-            Vector3 dir = (lookTarget.position - playerCamera.position).normalized;
+        if (!lockCamera || !lookTarget)
+            return;
 
-            Quaternion targetRot = Quaternion.LookRotation(dir);
+        Vector3 dir = (lookTarget.position - playerCamera.position).normalized;
 
-            playerCamera.rotation = Quaternion.Slerp(
-                playerCamera.rotation,
-                targetRot,
-                Time.deltaTime * cameraSnapSpeed
-            );
-        }
+        playerCamera.rotation = Quaternion.LookRotation(dir);
     }
 
     public void TriggerJumpscare()
