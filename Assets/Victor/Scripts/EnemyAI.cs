@@ -60,17 +60,30 @@ public class EnemyAI : MonoBehaviour
     void Update()
     {
         HandleStartDelay();
-        if (!aiActive || jumpscareTriggered) return;
+
+        if (!aiActive || jumpscareTriggered)
+            return;
 
         UpdateFootsteps();
         DetectPlayer();
 
         switch (state)
         {
-            case State.Patrol: Patrol(); break;
-            case State.Chase: Chase(); break;
-            case State.Investigate: Investigate(); break;
-            case State.Search: Search(); break;
+            case State.Patrol:
+                Patrol();
+                break;
+
+            case State.Chase:
+                Chase();
+                break;
+
+            case State.Investigate:
+                Investigate();
+                break;
+
+            case State.Search:
+                Search();
+                break;
         }
     }
 
@@ -79,12 +92,16 @@ public class EnemyAI : MonoBehaviour
         if (aiActive) return;
 
         startTimer += Time.deltaTime;
-        agent.isStopped = true;
+
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+            agent.isStopped = true;
 
         if (startTimer >= startDelay)
         {
             aiActive = true;
-            agent.isStopped = false;
+
+            if (agent != null && agent.enabled && agent.isOnNavMesh)
+                agent.isStopped = false;
         }
     }
 
@@ -129,9 +146,13 @@ public class EnemyAI : MonoBehaviour
 
     void Patrol()
     {
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
+            return;
+
         agent.speed = patrolSpeed;
 
-        if (patrolPoints.Length == 0) return;
+        if (patrolPoints.Length == 0)
+            return;
 
         if (heardNoise)
         {
@@ -154,6 +175,9 @@ public class EnemyAI : MonoBehaviour
 
     void Chase()
     {
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
+            return;
+
         agent.speed = chaseSpeed;
 
         float dist = Vector3.Distance(transform.position, player.position);
@@ -164,13 +188,9 @@ public class EnemyAI : MonoBehaviour
             {
                 jumpscareTriggered = true;
 
-                agent.isStopped = true;
-                agent.velocity = Vector3.zero;
-                agent.ResetPath();
-                agent.enabled = false;
-
                 jumpscareManager.TriggerJumpscare();
             }
+
             return;
         }
 
@@ -185,6 +205,9 @@ public class EnemyAI : MonoBehaviour
 
     void Investigate()
     {
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
+            return;
+
         agent.speed = patrolSpeed;
 
         Vector3 target = heardNoise ? heardPos : lastSeenPos;
@@ -200,21 +223,30 @@ public class EnemyAI : MonoBehaviour
 
     void Search()
     {
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
+            return;
+
         agent.speed = patrolSpeed;
         searchTimer += Time.deltaTime;
 
         if (searchTimer >= searchDuration)
         {
             state = State.Patrol;
-            agent.SetDestination(patrolPoints[patrolIndex].position);
+
+            if (patrolPoints.Length > 0)
+                agent.SetDestination(patrolPoints[patrolIndex].position);
         }
     }
 
     public void FreezeEnemy()
     {
-        agent.isStopped = true;
-        agent.ResetPath();
-        agent.enabled = false;
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.ResetPath();
+            agent.enabled = false;
+        }
+
         enabled = false;
     }
 }
