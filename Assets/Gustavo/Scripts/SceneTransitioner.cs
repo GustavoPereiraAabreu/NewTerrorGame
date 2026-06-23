@@ -7,18 +7,20 @@ public class SceneTransitioner : MonoBehaviour
 {
     public static SceneTransitioner Instance;
 
-    [Header("Configuração do Painel")]
-    // Arraste o Canvas Group do seu Painel aqui
+    [Header("Settings Panel")]
     [SerializeField] private CanvasGroup fadeGroup;
     [SerializeField] private float fadeSpeed = 1.5f;
 
+    [Tooltip("Fade Duration")]
+    [SerializeField] private float fadeDuration = 1.0f;
+
     private void Awake()
     {
-        // Padrão Singleton: Garante que só exista um gerenciador no jogo todo
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
         {
@@ -26,9 +28,29 @@ public class SceneTransitioner : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // ATUALIZADO: Usando o método moderno e otimizado da Unity
+        if (fadeGroup == null)
+        {
+            fadeGroup = Object.FindAnyObjectByType<CanvasGroup>();
+        }
+
+        if (fadeGroup != null)
+        {
+            fadeGroup.alpha = 1f;
+            fadeGroup.blocksRaycasts = true;
+            StartCoroutine(FadeOut());
+        }
+    }
+
     private void Start()
     {
-        // Garante que o painel comece cobrindo a tela e clareie (Fade Out)
         if (fadeGroup != null)
         {
             fadeGroup.alpha = 1f;
@@ -43,38 +65,44 @@ public class SceneTransitioner : MonoBehaviour
 
     private IEnumerator FadeOut()
     {
-        while (fadeGroup.alpha > 0)
+        float elapsedTime = 0f;
+        float startAlpha = fadeGroup.alpha;
+
+        while (elapsedTime < fadeDuration)
         {
-            fadeGroup.alpha -= Time.deltaTime * fadeSpeed;
+            elapsedTime += Time.deltaTime;
+            fadeGroup.alpha = Mathf.Lerp(startAlpha, 0f, elapsedTime / fadeDuration);
             yield return null;
         }
-        fadeGroup.blocksRaycasts = false; // Permite clicar nas coisas após o fade sumir
+
+        fadeGroup.alpha = 0f;
+        fadeGroup.blocksRaycasts = false;
     }
 
     private IEnumerator PerformTransition(string sceneName)
     {
-        fadeGroup.blocksRaycasts = true; // Bloqueia cliques durante o fade
-
-        // FADE IN: Escurece a tela (Alpha vai para 1)
-        while (fadeGroup.alpha < 1)
+        if (fadeGroup == null)
         {
-            fadeGroup.alpha += Time.deltaTime * fadeSpeed;
-            yield return null;
+            fadeGroup = Object.FindAnyObjectByType<CanvasGroup>();
         }
 
-        // Carrega a nova cena
+        if (fadeGroup != null)
+        {
+            fadeGroup.blocksRaycasts = true;
+
+            float elapsedTime = 0f;
+            float startAlpha = fadeGroup.alpha;
+
+            while (elapsedTime < fadeDuration)
+            {
+                elapsedTime += Time.deltaTime;
+                fadeGroup.alpha = Mathf.Lerp(startAlpha, 1f, elapsedTime / fadeDuration);
+                yield return null;
+            }
+            fadeGroup.alpha = 1f;
+        }
+
+        fadeGroup = null;
         SceneManager.LoadScene(sceneName);
-
-        // Aguarda um frame para garantir que a cena carregou antes de clarear
-        yield return null;
-
-        // FADE OUT: Clareia a tela na nova cena (Alpha vai para 0)
-        while (fadeGroup.alpha > 0)
-        {
-            fadeGroup.alpha -= Time.deltaTime * fadeSpeed;
-            yield return null;
-        }
-
-        fadeGroup.blocksRaycasts = false;
     }
 }
