@@ -30,13 +30,13 @@ public class StartSequence : MonoBehaviour
         playerController.SetActive(false);
     }
 
-    void Update()
+    // Chame este método pelo botão da UI
+    public void StartGame()
     {
-        if (!started && Input.GetKeyDown(KeyCode.Return))
-        {
-            started = true;
-            StartCoroutine(GameSequence());
-        }
+        if (started) return;
+
+        started = true;
+        StartCoroutine(GameSequence());
     }
 
     IEnumerator GameSequence()
@@ -53,24 +53,27 @@ public class StartSequence : MonoBehaviour
         // Move câmera até o player
         yield return StartCoroutine(MoveCameraToPlayer());
 
-        // Libera jogador
+        // Ativa o player
         playerController.SetActive(true);
 
+        // Desativa a câmera de introdução
         introCamera.gameObject.SetActive(false);
     }
 
     IEnumerator FadeOutText()
     {
-        float t = 0;
+        float t = 0f;
 
         while (t < textFadeDuration)
         {
             t += Time.deltaTime;
-            startText.alpha = Mathf.Lerp(1, 0, t / textFadeDuration);
+
+            startText.alpha = Mathf.Lerp(1f, 0f, t / textFadeDuration);
+
             yield return null;
         }
 
-        startText.alpha = 0;
+        startText.alpha = 0f;
     }
 
     IEnumerator MoveCameraToPlayer()
@@ -78,7 +81,7 @@ public class StartSequence : MonoBehaviour
         Vector3 startPos = introCamera.transform.position;
         Quaternion startRot = introCamera.transform.rotation;
 
-        float t = 0;
+        float t = 0f;
 
         while (t < cameraMoveDuration)
         {
