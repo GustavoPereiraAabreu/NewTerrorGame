@@ -33,8 +33,8 @@ public class DoorScript : MonoBehaviour
 
     private void Update()
     {
-        // Se o player está na área e apertou E
-        if (onInteract && Input.GetKeyDown(KeyCode.E))
+        // Se o player está na área e apertou T
+        if (onInteract && Input.GetKeyDown(KeyCode.T))
         {
             Interact();
         }

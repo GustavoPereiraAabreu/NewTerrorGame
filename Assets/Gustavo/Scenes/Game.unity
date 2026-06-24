@@ -180,7 +180,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SceneTransitioner
   fadeGroup: {fileID: 1096979557}
   fadeSpeed: 1.5
-  fadeDuration: 7
+  fadeDuration: 1
+--- !u!114 &51053095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51053090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 3
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &75927776
 GameObject:
   m_ObjectHideFlags: 0
@@ -4567,6 +4585,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bf66785b13f01484c91459037507c2bb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 51053094}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bf66785b13f01484c91459037507c2bb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 51053095}
   m_SourcePrefab: {fileID: 100100000, guid: bf66785b13f01484c91459037507c2bb, type: 3}
 --- !u!1 &1397879129
 GameObject:
@@ -6798,7 +6819,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Press E to interact
+  m_text: Press T to interact
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

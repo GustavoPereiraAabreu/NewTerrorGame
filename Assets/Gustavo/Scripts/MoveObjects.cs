@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SecretDoor : MonoBehaviour
+public class MoveObjects : MonoBehaviour
 {
 
     [Header("Interaction UI")]
