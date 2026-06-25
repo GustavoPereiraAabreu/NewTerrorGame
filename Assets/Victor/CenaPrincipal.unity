@@ -834,6 +834,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &1048093297 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 2447416162413297018, guid: 40e9d16dbf847b846a70916d3bacb776, type: 3}
+  m_PrefabInstance: {fileID: 6408321562283850496}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1051078394
 GameObject:
   m_ObjectHideFlags: 0
@@ -1119,6 +1124,7 @@ GameObject:
   - component: {fileID: 1236264062}
   - component: {fileID: 1236264061}
   - component: {fileID: 1236264063}
+  - component: {fileID: 1236264064}
   m_Layer: 0
   m_Name: Corpo
   m_TagString: Untagged
@@ -1218,6 +1224,28 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.49539098, y: 0.4213882, z: 2.0993974}
   m_Center: {x: 0.0024881344, y: -0.015041393, z: 1.0496986}
+--- !u!95 &1236264064
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1236264058}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 1c76fa692fce7b240b9d38f6a0510356, type: 3}
+  m_Controller: {fileID: 9100000, guid: 5a538688f554d9e4ba6866dabd10da0e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1254121226
 GameObject:
   m_ObjectHideFlags: 0
@@ -2031,12 +2059,13 @@ MonoBehaviour:
   state: 0
   player: {fileID: 4207293169541931}
   agent: {fileID: 7215727315640863941}
+  animator: {fileID: 0}
   patrolPoints:
   - {fileID: 828337837}
   - {fileID: 828337837}
   - {fileID: 828337837}
   - {fileID: 828337837}
-  footstepAudio: {fileID: 0}
+  footstepAudio: {fileID: 1048093297}
   jumpscareManager: {fileID: 7106332415957230259}
   viewDistance: 12
   viewAngle: 100
