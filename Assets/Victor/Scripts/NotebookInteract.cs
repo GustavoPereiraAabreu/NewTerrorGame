@@ -59,7 +59,7 @@ public class NotebookInteract : MonoBehaviour
         yield return null;
 
         if (mouseLook != null)
-            mouseLook.canLook = false;
+            mouseLook.LockLook();
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -70,10 +70,7 @@ public class NotebookInteract : MonoBehaviour
         aberto = false;
 
         if (mouseLook != null)
-        {
-            mouseLook.StopMouseJitter();
-            mouseLook.canLook = true;
-        }
+            mouseLook.UnlockLook();
 
         if (playerMovement != null)
             playerMovement.enabled = true;

@@ -22,8 +22,14 @@ public class FirstPersonLook : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-    public void StopMouseJitter()
+    public void LockLook()
     {
+        canLook = false;
+    }
+
+    public void UnlockLook()
+    {
+        canLook = true;
         frameVelocity = Vector2.zero;
     }
 
@@ -33,8 +39,8 @@ public class FirstPersonLook : MonoBehaviour
             return;
 
         Vector2 mouseDelta = new Vector2(
-            Input.GetAxisRaw("Mouse X"),
-            Input.GetAxisRaw("Mouse Y")
+            Input.GetAxis("Mouse X"),
+            Input.GetAxis("Mouse Y")
         );
 
         Vector2 rawFrameVelocity =
@@ -43,10 +49,11 @@ public class FirstPersonLook : MonoBehaviour
         frameVelocity = Vector2.Lerp(
             frameVelocity,
             rawFrameVelocity,
-            1f / smoothing
+            Time.deltaTime * 15f
         );
 
         velocity += frameVelocity;
+
         velocity.y = Mathf.Clamp(velocity.y, -90f, 90f);
 
         transform.localRotation =
