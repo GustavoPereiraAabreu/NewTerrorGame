@@ -5,21 +5,20 @@ public class FirstPersonLook : MonoBehaviour
     [SerializeField] Transform character;
 
     public float sensitivity = 2f;
-    public float smoothing = 1.5f;
 
-    Vector2 velocity;
-    Vector2 frameVelocity;
+    Vector2 rotation;
 
     public bool canLook = true;
 
     void Reset()
     {
-        character = GetComponentInParent<FirstPersonMovement>().transform;
+        character = GetComponentInParent<Transform>();
     }
 
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     public void LockLook()
@@ -30,36 +29,21 @@ public class FirstPersonLook : MonoBehaviour
     public void UnlockLook()
     {
         canLook = true;
-        frameVelocity = Vector2.zero;
     }
 
     void Update()
     {
-        if (!canLook)
-            return;
+        if (!canLook) return;
 
-        Vector2 mouseDelta = new Vector2(
-            Input.GetAxis("Mouse X"),
-            Input.GetAxis("Mouse Y")
-        );
+        float mouseX = Input.GetAxis("Mouse X") * sensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
 
-        Vector2 rawFrameVelocity =
-            Vector2.Scale(mouseDelta, Vector2.one * sensitivity);
+        rotation.x += mouseX;
+        rotation.y -= mouseY;
 
-        frameVelocity = Vector2.Lerp(
-            frameVelocity,
-            rawFrameVelocity,
-            Time.deltaTime * 15f
-        );
+        rotation.y = Mathf.Clamp(rotation.y, -90f, 90f);
 
-        velocity += frameVelocity;
-
-        velocity.y = Mathf.Clamp(velocity.y, -90f, 90f);
-
-        transform.localRotation =
-            Quaternion.AngleAxis(-velocity.y, Vector3.right);
-
-        character.localRotation =
-            Quaternion.AngleAxis(velocity.x, Vector3.up);
+        transform.localRotation = Quaternion.Euler(rotation.y, 0f, 0f);
+        character.localRotation = Quaternion.Euler(0f, rotation.x, 0f);
     }
 }

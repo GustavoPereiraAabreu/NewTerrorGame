@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 public class NotebookInteract : MonoBehaviour
@@ -14,66 +13,50 @@ public class NotebookInteract : MonoBehaviour
     public Camera playerCamera;
     public float distanciaInteracao = 3f;
 
-    private bool aberto = false;
+    private bool aberto;
 
     void Start()
     {
-        if (painelNotebook != null)
-            painelNotebook.SetActive(false);
+        FecharNotebook();
     }
 
     void Update()
     {
-        if (playerCamera == null)
-            return;
+        if (aberto) return;
 
-        bool olhandoParaNotebook = false;
-
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, distanciaInteracao))
-        {
-            if (hit.transform == transform)
-                olhandoParaNotebook = true;
-        }
+        bool olhando = Physics.Raycast(ray, out hit, distanciaInteracao)
+                       && hit.transform == transform;
 
-        if (!aberto && olhandoParaNotebook && Input.GetKeyDown(KeyCode.E))
+        if (olhando && Input.GetKeyDown(KeyCode.E))
         {
-            StartCoroutine(AbrirNotebook());
-        }
-
-        if (aberto && painelNotebook != null && !painelNotebook.activeSelf)
-        {
-            FecharNotebook();
+            AbrirNotebook();
         }
     }
 
-    IEnumerator AbrirNotebook()
+    public void AbrirNotebook()
     {
         aberto = true;
 
-        if (painelNotebook != null)
-            painelNotebook.SetActive(true);
+        painelNotebook.SetActive(true);
 
-        yield return null;
-
-        if (mouseLook != null)
-            mouseLook.LockLook();
+        if (playerMovement) playerMovement.enabled = false;
+        if (mouseLook) mouseLook.LockLook();
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
 
-    void FecharNotebook()
+    public void FecharNotebook()
     {
         aberto = false;
 
-        if (mouseLook != null)
-            mouseLook.UnlockLook();
+        painelNotebook.SetActive(false);
 
-        if (playerMovement != null)
-            playerMovement.enabled = true;
+        if (playerMovement) playerMovement.enabled = true;
+        if (mouseLook) mouseLook.UnlockLook();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
