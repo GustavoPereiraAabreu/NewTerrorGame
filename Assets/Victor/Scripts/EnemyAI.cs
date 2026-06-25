@@ -9,6 +9,7 @@ public class EnemyAI : MonoBehaviour
     [Header("References")]
     public Transform player;
     public NavMeshAgent agent;
+    public Animator animator;
     public Transform[] patrolPoints;
     public AudioSource footstepAudio;
     public JumpscareController jumpscareManager;
@@ -49,6 +50,12 @@ public class EnemyAI : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
 
+        // Tenta buscar automaticamente o Animator se ele estiver no mesmo objeto
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+        }
+
         if (footstepAudio)
         {
             footstepAudio.loop = true;
@@ -62,7 +69,11 @@ public class EnemyAI : MonoBehaviour
         HandleStartDelay();
 
         if (!aiActive || jumpscareTriggered)
+        {
+            // Se o inimigo morrer/parar ou der jumpscare, garante que ele pare de andar na animação
+            UpdateAnimation(false);
             return;
+        }
 
         UpdateFootsteps();
         DetectPlayer();
@@ -85,6 +96,9 @@ public class EnemyAI : MonoBehaviour
                 Search();
                 break;
         }
+
+        // Atualiza a animação a cada frame com base no movimento real do NavMeshAgent
+        CheckMovementForAnimation();
     }
 
     void HandleStartDelay()
@@ -187,7 +201,6 @@ public class EnemyAI : MonoBehaviour
             if (!jumpscareTriggered)
             {
                 jumpscareTriggered = true;
-
                 jumpscareManager.TriggerJumpscare();
             }
 
@@ -238,6 +251,30 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+   
+    void CheckMovementForAnimation()
+    {
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            // Checa se a velocidade atual dele é maior que um limite pequeno
+            bool isMoving = agent.velocity.sqrMagnitude > 0.01f && !agent.isStopped;
+            UpdateAnimation(isMoving);
+        }
+        else
+        {
+            UpdateAnimation(false);
+        }
+    }
+
+
+    void UpdateAnimation(bool isMoving)
+    {
+        if (animator != null)
+        {
+            animator.SetBool("isWalking", isMoving);
+        }
+    }
+
     public void FreezeEnemy()
     {
         if (agent != null && agent.enabled && agent.isOnNavMesh)
@@ -247,6 +284,7 @@ public class EnemyAI : MonoBehaviour
             agent.enabled = false;
         }
 
+        UpdateAnimation(false);
         enabled = false;
     }
 }
