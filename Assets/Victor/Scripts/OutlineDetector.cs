@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem.Interactions;
 
 public class OutlineDetector : MonoBehaviour
 {
@@ -25,6 +24,17 @@ public class OutlineDetector : MonoBehaviour
                 if (currentOutline != null)
                     currentOutline.enabled = true;
             }
+
+            // Interação só acontece se o Raycast acertou algo
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                TVInteraction tv = hit.collider.GetComponentInParent<TVInteraction>();
+
+                if (tv != null)
+                {
+                    tv.EnterTV();
+                }
+            }
         }
         else
         {
@@ -32,17 +42,6 @@ public class OutlineDetector : MonoBehaviour
             {
                 currentOutline.enabled = false;
                 currentOutline = null;
-            }
-        }
-
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            TVInteraction tv =
-                hit.collider.GetComponentInParent<TVInteraction>();
-
-            if (tv != null)
-            {
-                tv.EnterTV();
             }
         }
     }

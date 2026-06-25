@@ -8,24 +8,42 @@ public class NotebookInteract : MonoBehaviour
 
     [Header("Player")]
     public MonoBehaviour playerMovement;
-    public MonoBehaviour mouseLook;
+    public FirstPersonLook mouseLook;
+
+    [Header("Interação")]
+    public Camera playerCamera;
+    public float distanciaInteracao = 3f;
 
     private bool aberto = false;
 
     void Start()
     {
-        painelNotebook.SetActive(false);
+        if (painelNotebook != null)
+            painelNotebook.SetActive(false);
     }
 
     void Update()
     {
-        if (!aberto && Input.GetKeyDown(KeyCode.E))
+        if (playerCamera == null)
+            return;
+
+        bool olhandoParaNotebook = false;
+
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, distanciaInteracao))
+        {
+            if (hit.transform == transform)
+                olhandoParaNotebook = true;
+        }
+
+        if (!aberto && olhandoParaNotebook && Input.GetKeyDown(KeyCode.E))
         {
             StartCoroutine(AbrirNotebook());
         }
 
-        // Se o painel foi fechado por outro script ou botão
-        if (aberto && !painelNotebook.activeSelf)
+        if (aberto && painelNotebook != null && !painelNotebook.activeSelf)
         {
             FecharNotebook();
         }
@@ -35,13 +53,13 @@ public class NotebookInteract : MonoBehaviour
     {
         aberto = true;
 
-        painelNotebook.SetActive(true);
+        if (painelNotebook != null)
+            painelNotebook.SetActive(true);
 
-        // Espera um frame para evitar input preso
         yield return null;
 
-        playerMovement.enabled = false;
-        mouseLook.enabled = false;
+        if (mouseLook != null)
+            mouseLook.LockLook();
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -51,8 +69,11 @@ public class NotebookInteract : MonoBehaviour
     {
         aberto = false;
 
-        playerMovement.enabled = true;
-        mouseLook.enabled = true;
+        if (mouseLook != null)
+            mouseLook.UnlockLook();
+
+        if (playerMovement != null)
+            playerMovement.enabled = true;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
