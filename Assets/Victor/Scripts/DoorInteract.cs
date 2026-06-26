@@ -21,7 +21,7 @@ public class DoorInteract : MonoBehaviour
                 if (audioSource && doorSound)
                     audioSource.PlayOneShot(doorSound);
 
-                Invoke("LoadScene", 0.5f);
+                Invoke("LoadScene", 1.5f);
             }
         }
     }

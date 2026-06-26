@@ -1,38 +1,46 @@
+using TMPro;
 using UnityEngine;
 
 public class NotebookInteract : MonoBehaviour
 {
-    [Header("UI")]
-    public GameObject painelNotebook;
-
-    [Header("Player")]
-    public MonoBehaviour playerMovement;
-    public FirstPersonLook mouseLook;
-
-    [Header("Interação")]
+    [Header("ReferÃªncias")]
     public Camera playerCamera;
+    public GameObject painelNotebook;
+    public GameObject interactionText;
+
+    [Header("Scripts do Player")]
+    public MonoBehaviour playerMovement;
+    public MonoBehaviour playerLook;
+
+    [Header("InteraÃ§Ã£o")]
     public float distanciaInteracao = 3f;
 
-    private bool aberto;
+    private bool aberto = false;
 
     void Start()
     {
-        FecharNotebook();
+        painelNotebook.SetActive(false);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void Update()
     {
-        if (aberto) return;
+        if (aberto)
+            return;
 
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-        RaycastHit hit;
 
-        bool olhando = Physics.Raycast(ray, out hit, distanciaInteracao)
-                       && hit.transform == transform;
-
-        if (olhando && Input.GetKeyDown(KeyCode.E))
+        if (Physics.Raycast(ray, out RaycastHit hit, distanciaInteracao))
         {
-            AbrirNotebook();
+            if (hit.transform == transform)
+            {
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    AbrirNotebook();
+                }
+            }
         }
     }
 
@@ -41,9 +49,10 @@ public class NotebookInteract : MonoBehaviour
         aberto = true;
 
         painelNotebook.SetActive(true);
+        interactionText.SetActive(false);
 
-        if (playerMovement) playerMovement.enabled = false;
-        if (mouseLook) mouseLook.LockLook();
+        playerMovement.enabled = false;
+        playerLook.enabled = false;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -55,8 +64,8 @@ public class NotebookInteract : MonoBehaviour
 
         painelNotebook.SetActive(false);
 
-        if (playerMovement) playerMovement.enabled = true;
-        if (mouseLook) mouseLook.UnlockLook();
+        playerMovement.enabled = true;
+        playerLook.enabled = true;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;

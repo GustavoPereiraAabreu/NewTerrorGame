@@ -11,7 +11,7 @@ public class StartSequence : MonoBehaviour
     public Animator carAnimator;
     public string animationTrigger = "Start";
 
-    [Header("Câmeras")]
+    [Header("Cameras")]
     public Camera introCamera;
     public Transform playerCameraTarget;
 
@@ -30,7 +30,6 @@ public class StartSequence : MonoBehaviour
         playerController.SetActive(false);
     }
 
-    // Chame este método pelo botão da UI
     public void StartGame()
     {
         if (started) return;
@@ -41,22 +40,16 @@ public class StartSequence : MonoBehaviour
 
     IEnumerator GameSequence()
     {
-        // Fade do texto
         yield return StartCoroutine(FadeOutText());
 
-        // Inicia animação do carro
         carAnimator.SetTrigger(animationTrigger);
 
-        // Espera a animação terminar
         yield return new WaitForSeconds(carAnimationDuration);
 
-        // Move câmera até o player
         yield return StartCoroutine(MoveCameraToPlayer());
 
-        // Ativa o player
         playerController.SetActive(true);
 
-        // Desativa a câmera de introdução
         introCamera.gameObject.SetActive(false);
     }
 
