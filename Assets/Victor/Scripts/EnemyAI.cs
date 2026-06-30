@@ -3,7 +3,7 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
-    public enum State { Patrol, Chase, Investigate, Search }
+    public enum State { Patrol, Spotted, Chase, Investigate, Search }
     public State state = State.Patrol;
 
     [Header("References")]
@@ -30,6 +30,9 @@ public class EnemyAI : MonoBehaviour
     [Header("Attack")]
     public float stopDistance = 2.2f;
 
+    [Header("Reaction System")]
+    public float reactionTime = 1.5f;
+
     [Header("Footsteps")]
     public float maxStepDistance = 20f;
     public float minVolume = 0.05f;
@@ -41,7 +44,7 @@ public class EnemyAI : MonoBehaviour
     public float startDelay = 0f;
 
     int patrolIndex;
-    float waitTimer, searchTimer, startTimer;
+    float waitTimer, searchTimer, startTimer, reactionTimer;
     bool heardNoise, aiActive, jumpscareTriggered;
 
     Vector3 heardPos, lastSeenPos;
@@ -69,18 +72,26 @@ public class EnemyAI : MonoBehaviour
 
         if (!aiActive || jumpscareTriggered)
         {
-            // Se estiver parado ou em jumpscare, desativa movimento e força Idle
-            UpdateAnimation(false, false);
+            UpdateAnimation(false, false, false);
             return;
         }
 
         UpdateFootsteps();
-        DetectPlayer();
+
+      
+        if (state != State.Spotted && state != State.Chase)
+        {
+            DetectPlayer();
+        }
 
         switch (state)
         {
             case State.Patrol:
                 Patrol();
+                break;
+
+            case State.Spotted:
+                Spotted();
                 break;
 
             case State.Chase:
@@ -96,7 +107,6 @@ public class EnemyAI : MonoBehaviour
                 break;
         }
 
-        // Monitora o estado físico e lógico para atualizar as três animações
         CheckMovementForAnimation();
     }
 
@@ -142,13 +152,52 @@ public class EnemyAI : MonoBehaviour
                 !Physics.Raycast(eye, dir, dist, obstacleMask))
             {
                 lastSeenPos = player.position;
-                state = State.Chase;
+
+              
+                reactionTimer = 0f;
+                state = State.Spotted;
             }
+        }
+    }
+
+
+    void Spotted()
+    {
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
+            return;
+
+        
+        agent.isStopped = true;
+        agent.velocity = Vector3.zero;
+
+       
+        agent.updateRotation = false;
+
+       
+        Vector3 lookDir = player.position - transform.position;
+        lookDir.y = 0f;
+
+        if (lookDir != Vector3.zero)
+        {
+           
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookDir), Time.deltaTime * 15f);
+        }
+
+        reactionTimer += Time.deltaTime;
+
+    
+        if (reactionTimer >= reactionTime)
+        {
+            agent.updateRotation = true; 
+            agent.isStopped = false;
+            state = State.Chase;
         }
     }
 
     public void HearNoise(Vector3 pos)
     {
+        if (state == State.Spotted || state == State.Chase) return;
+
         if (Vector3.Distance(transform.position, pos) <= hearingRange)
         {
             heardNoise = true;
@@ -162,6 +211,8 @@ public class EnemyAI : MonoBehaviour
         if (agent == null || !agent.enabled || !agent.isOnNavMesh)
             return;
 
+        agent.updateRotation = true;
+        agent.isStopped = false;
         agent.speed = patrolSpeed;
 
         if (patrolPoints.Length == 0)
@@ -191,6 +242,7 @@ public class EnemyAI : MonoBehaviour
         if (agent == null || !agent.enabled || !agent.isOnNavMesh)
             return;
 
+        agent.updateRotation = true;
         agent.speed = chaseSpeed;
 
         float dist = Vector3.Distance(transform.position, player.position);
@@ -202,7 +254,6 @@ public class EnemyAI : MonoBehaviour
                 jumpscareTriggered = true;
                 jumpscareManager.TriggerJumpscare();
             }
-
             return;
         }
 
@@ -220,6 +271,8 @@ public class EnemyAI : MonoBehaviour
         if (agent == null || !agent.enabled || !agent.isOnNavMesh)
             return;
 
+        agent.updateRotation = true;
+        agent.isStopped = false;
         agent.speed = patrolSpeed;
 
         Vector3 target = heardNoise ? heardPos : lastSeenPos;
@@ -238,6 +291,8 @@ public class EnemyAI : MonoBehaviour
         if (agent == null || !agent.enabled || !agent.isOnNavMesh)
             return;
 
+        agent.updateRotation = true;
+        agent.isStopped = false;
         agent.speed = patrolSpeed;
         searchTimer += Time.deltaTime;
 
@@ -250,34 +305,31 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-   
     void CheckMovementForAnimation()
     {
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
             bool isMoving = agent.velocity.sqrMagnitude > 0.01f && !agent.isStopped;
-
             bool isRunning = isMoving && (state == State.Chase);
-
             bool isWalking = isMoving && !isRunning;
+            bool isSpotted = (state == State.Spotted);
 
-            UpdateAnimation(isWalking, isRunning);
+            UpdateAnimation(isWalking, isRunning, isSpotted);
         }
         else
         {
-            UpdateAnimation(false, false);
+            UpdateAnimation(false, false, (state == State.Spotted));
         }
     }
 
-    void UpdateAnimation(bool isWalking, bool isRunning)
+    void UpdateAnimation(bool isWalking, bool isRunning, bool isSpotted)
     {
         if (animator != null)
         {
             animator.SetBool("isWalking", isWalking);
             animator.SetBool("isRun", isRunning);
-
-            
-            animator.SetBool("isIdle", !isWalking && !isRunning);
+            animator.SetBool("isSpotted", isSpotted);
+            animator.SetBool("isIdle", !isWalking && !isRunning && !isSpotted);
         }
     }
 
@@ -290,7 +342,7 @@ public class EnemyAI : MonoBehaviour
             agent.enabled = false;
         }
 
-        UpdateAnimation(false, false);
+        UpdateAnimation(false, false, false);
         enabled = false;
     }
 }
