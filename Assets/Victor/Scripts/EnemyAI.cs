@@ -50,7 +50,6 @@ public class EnemyAI : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
 
-        // Tenta buscar automaticamente o Animator se ele estiver no mesmo objeto
         if (animator == null)
         {
             animator = GetComponent<Animator>();
@@ -70,7 +69,7 @@ public class EnemyAI : MonoBehaviour
 
         if (!aiActive || jumpscareTriggered)
         {
-            // Se o inimigo morrer/parar ou der jumpscare, garante que ele pare de andar na animação
+            // Se estiver inativo ou em jumpscare, força o estado Idle
             UpdateAnimation(false);
             return;
         }
@@ -97,7 +96,7 @@ public class EnemyAI : MonoBehaviour
                 break;
         }
 
-        // Atualiza a animação a cada frame com base no movimento real do NavMeshAgent
+        // Monitora a velocidade real do agente para atualizar o Animator
         CheckMovementForAnimation();
     }
 
@@ -251,12 +250,12 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-   
+  
     void CheckMovementForAnimation()
     {
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
-            // Checa se a velocidade atual dele é maior que um limite pequeno
+            // Se a velocidade for maior que o limite mínimo, ele está andando
             bool isMoving = agent.velocity.sqrMagnitude > 0.01f && !agent.isStopped;
             UpdateAnimation(isMoving);
         }
@@ -266,12 +265,13 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-
+    // Seta ambos os parâmetros booleanos de forma invertida
     void UpdateAnimation(bool isMoving)
     {
         if (animator != null)
         {
             animator.SetBool("isWalking", isMoving);
+            animator.SetBool("isIdle", !isMoving); // Se não estiver andando, está em Idle
         }
     }
 
