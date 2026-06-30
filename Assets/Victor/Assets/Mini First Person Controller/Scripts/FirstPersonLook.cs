@@ -2,23 +2,32 @@
 
 public class FirstPersonLook : MonoBehaviour
 {
-    [SerializeField] Transform character;
+    [SerializeField] private Transform character;
 
-    public float sensitivity = 2f;
+    [SerializeField] private float sensitivity = 2f;
 
-    Vector2 rotation;
+    private Vector2 rotation;
 
     public bool canLook = true;
 
     void Reset()
     {
-        character = GetComponentInParent<Transform>();
+        if (transform.parent != null)
+            character = transform.parent;
     }
 
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        // Usa a rotação inicial definida na cena
+        rotation.x = character.localEulerAngles.y;
+        rotation.y = transform.localEulerAngles.x;
+
+        // Converte 270° em -90°, por exemplo
+        if (rotation.y > 180f)
+            rotation.y -= 360f;
     }
 
     public void LockLook()
@@ -33,7 +42,8 @@ public class FirstPersonLook : MonoBehaviour
 
     void Update()
     {
-        if (!canLook) return;
+        if (!canLook)
+            return;
 
         float mouseX = Input.GetAxis("Mouse X") * sensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
@@ -43,7 +53,10 @@ public class FirstPersonLook : MonoBehaviour
 
         rotation.y = Mathf.Clamp(rotation.y, -90f, 90f);
 
+        // Rotação da câmera (vertical)
         transform.localRotation = Quaternion.Euler(rotation.y, 0f, 0f);
+
+        // Rotação do personagem (horizontal)
         character.localRotation = Quaternion.Euler(0f, rotation.x, 0f);
     }
 }
