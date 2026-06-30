@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 
 public class NotebookInteract : MonoBehaviour
@@ -9,8 +8,8 @@ public class NotebookInteract : MonoBehaviour
     public GameObject interactionText;
 
     [Header("Scripts do Player")]
-    public MonoBehaviour playerMovement;
-    public MonoBehaviour playerLook;
+    public FirstPersonMovement playerMovement;
+    public FirstPersonLook playerLook;
 
     [Header("Interação")]
     public float distanciaInteracao = 3f;
@@ -49,15 +48,18 @@ public class NotebookInteract : MonoBehaviour
         aberto = true;
 
         painelNotebook.SetActive(true);
-        interactionText.SetActive(false);
+
+        if (interactionText != null)
+            interactionText.SetActive(false);
 
         playerMovement.enabled = false;
-        playerLook.enabled = false;
+        playerLook.LockLook();
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
 
+    // Chame essa função no botão X
     public void FecharNotebook()
     {
         aberto = false;
@@ -65,7 +67,7 @@ public class NotebookInteract : MonoBehaviour
         painelNotebook.SetActive(false);
 
         playerMovement.enabled = true;
-        playerLook.enabled = true;
+        playerLook.UnlockLook();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
