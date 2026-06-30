@@ -69,8 +69,8 @@ public class EnemyAI : MonoBehaviour
 
         if (!aiActive || jumpscareTriggered)
         {
-            // Se estiver inativo ou em jumpscare, força o estado Idle
-            UpdateAnimation(false);
+            // Se estiver parado ou em jumpscare, desativa movimento e força Idle
+            UpdateAnimation(false, false);
             return;
         }
 
@@ -96,7 +96,7 @@ public class EnemyAI : MonoBehaviour
                 break;
         }
 
-        // Monitora a velocidade real do agente para atualizar o Animator
+        // Monitora o estado físico e lógico para atualizar as três animações
         CheckMovementForAnimation();
     }
 
@@ -250,28 +250,34 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-  
+   
     void CheckMovementForAnimation()
     {
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
-            // Se a velocidade for maior que o limite mínimo, ele está andando
             bool isMoving = agent.velocity.sqrMagnitude > 0.01f && !agent.isStopped;
-            UpdateAnimation(isMoving);
+
+            bool isRunning = isMoving && (state == State.Chase);
+
+            bool isWalking = isMoving && !isRunning;
+
+            UpdateAnimation(isWalking, isRunning);
         }
         else
         {
-            UpdateAnimation(false);
+            UpdateAnimation(false, false);
         }
     }
 
-    // Seta ambos os parâmetros booleanos de forma invertida
-    void UpdateAnimation(bool isMoving)
+    void UpdateAnimation(bool isWalking, bool isRunning)
     {
         if (animator != null)
         {
-            animator.SetBool("isWalking", isMoving);
-            animator.SetBool("isIdle", !isMoving); // Se não estiver andando, está em Idle
+            animator.SetBool("isWalking", isWalking);
+            animator.SetBool("isRun", isRunning);
+
+            
+            animator.SetBool("isIdle", !isWalking && !isRunning);
         }
     }
 
@@ -284,7 +290,7 @@ public class EnemyAI : MonoBehaviour
             agent.enabled = false;
         }
 
-        UpdateAnimation(false);
+        UpdateAnimation(false, false);
         enabled = false;
     }
 }

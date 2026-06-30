@@ -9,7 +9,7 @@ public class JumpscareController : MonoBehaviour
 
     [Header("Enemy")]
     public GameObject enemy;
-    public MonoBehaviour enemyAI;
+    public EnemyAI enemyAIScript;
     public Transform headTarget;
     public float distanceFromCamera = 1.5f;
 
@@ -47,7 +47,6 @@ public class JumpscareController : MonoBehaviour
             return;
 
         Vector3 dir = (lookTarget.position - playerCamera.position).normalized;
-
         playerCamera.rotation = Quaternion.LookRotation(dir);
     }
 
@@ -57,7 +56,7 @@ public class JumpscareController : MonoBehaviour
         lockCamera = true;
 
         LockPlayer();
-        FreezeEnemy();
+        FreezeEnemy(); 
         PositionEnemyInFront();
 
         lookTarget = headTarget;
@@ -71,7 +70,7 @@ public class JumpscareController : MonoBehaviour
     {
         if (playerRb)
         {
-            playerRb.linearVelocity = Vector3.zero;
+            playerRb.linearVelocity = Vector3.zero; 
             playerRb.angularVelocity = Vector3.zero;
             playerRb.isKinematic = true;
         }
@@ -84,27 +83,35 @@ public class JumpscareController : MonoBehaviour
 
     void FreezeEnemy()
     {
-        if (enemyAI) enemyAI.enabled = false;
-
-        enemy.SendMessage("FreezeEnemy", SendMessageOptions.DontRequireReceiver);
+        
+        if (enemyAIScript != null)
+        {
+            enemyAIScript.FreezeEnemy();
+        }
+        else if (enemy != null)
+        {
+            
+            enemy.SendMessage("FreezeEnemy", SendMessageOptions.DontRequireReceiver);
+        }
     }
 
     void PositionEnemyInFront()
     {
         Vector3 forward = playerCamera.forward;
-
         Vector3 pos = playerCamera.position + forward * distanceFromCamera;
 
-        pos.y = enemy.transform.position.y;
-
-        enemy.transform.position = pos;
-
-        Vector3 dir = playerCamera.position - enemy.transform.position;
-        dir.y = 0f;
-
-        if (dir != Vector3.zero)
+        if (enemy != null)
         {
-            enemy.transform.rotation = Quaternion.LookRotation(dir);
+            pos.y = enemy.transform.position.y;
+            enemy.transform.position = pos;
+
+            Vector3 dir = playerCamera.position - enemy.transform.position;
+            dir.y = 0f;
+
+            if (dir != Vector3.zero)
+            {
+                enemy.transform.rotation = Quaternion.LookRotation(dir);
+            }
         }
     }
 
