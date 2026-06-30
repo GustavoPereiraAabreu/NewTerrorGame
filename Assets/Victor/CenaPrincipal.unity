@@ -518,7 +518,7 @@ MonoBehaviour:
   footstepAudio: {fileID: 1200507074}
   jumpscareManager: {fileID: 7106332415957230259}
   viewDistance: 12
-  viewAngle: 100
+  viewAngle: 150
   visionMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -526,8 +526,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   hearingRange: 10
-  patrolSpeed: 2
-  chaseSpeed: 3
+  patrolSpeed: 1
+  chaseSpeed: 1.5
   stopDistance: 3
   reactionTime: 1.5
   maxStepDistance: 20
@@ -1969,7 +1969,7 @@ MonoBehaviour:
   distanceFromCamera: 0.5
   deathScreen: {fileID: 321351219}
   sound: {fileID: 0}
-  deathScreenDelay: 3
+  deathScreenDelay: 2
   cameraSnapSpeed: 10
 --- !u!4 &7955089674952891202
 Transform:
