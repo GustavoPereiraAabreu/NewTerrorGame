@@ -50,7 +50,6 @@ public class EnemyAI : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
 
-        // Tenta buscar automaticamente o Animator se ele estiver no mesmo objeto
         if (animator == null)
         {
             animator = GetComponent<Animator>();
@@ -70,8 +69,8 @@ public class EnemyAI : MonoBehaviour
 
         if (!aiActive || jumpscareTriggered)
         {
-            // Se o inimigo morrer/parar ou der jumpscare, garante que ele pare de andar na animação
-            UpdateAnimation(false);
+            // Se estiver parado ou em jumpscare, desativa movimento e força Idle
+            UpdateAnimation(false, false);
             return;
         }
 
@@ -97,7 +96,7 @@ public class EnemyAI : MonoBehaviour
                 break;
         }
 
-        // Atualiza a animação a cada frame com base no movimento real do NavMeshAgent
+        // Monitora o estado físico e lógico para atualizar as três animações
         CheckMovementForAnimation();
     }
 
@@ -256,22 +255,29 @@ public class EnemyAI : MonoBehaviour
     {
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
-            // Checa se a velocidade atual dele é maior que um limite pequeno
             bool isMoving = agent.velocity.sqrMagnitude > 0.01f && !agent.isStopped;
-            UpdateAnimation(isMoving);
+
+            bool isRunning = isMoving && (state == State.Chase);
+
+            bool isWalking = isMoving && !isRunning;
+
+            UpdateAnimation(isWalking, isRunning);
         }
         else
         {
-            UpdateAnimation(false);
+            UpdateAnimation(false, false);
         }
     }
 
-
-    void UpdateAnimation(bool isMoving)
+    void UpdateAnimation(bool isWalking, bool isRunning)
     {
         if (animator != null)
         {
-            animator.SetBool("isWalking", isMoving);
+            animator.SetBool("isWalking", isWalking);
+            animator.SetBool("isRun", isRunning);
+
+            
+            animator.SetBool("isIdle", !isWalking && !isRunning);
         }
     }
 
@@ -284,7 +290,7 @@ public class EnemyAI : MonoBehaviour
             agent.enabled = false;
         }
 
-        UpdateAnimation(false);
+        UpdateAnimation(false, false);
         enabled = false;
     }
 }
