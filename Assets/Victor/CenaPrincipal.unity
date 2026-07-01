@@ -408,7 +408,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 6af1deaf0a8765049afe78d88dfd0284, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.54
   m_Pitch: 1
@@ -515,11 +515,11 @@ MonoBehaviour:
   - {fileID: 514869512}
   - {fileID: 659851035}
   - {fileID: 803823453}
-  footstepAudio: {fileID: 1200507074}
+  footstepAudio: {fileID: 0}
   jumpscareManager: {fileID: 7106332415957230259}
   viewDistance: 8
   viewAngle: 190
-  hearingRange: 10
+  hearingRange: 5
   visionMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -533,7 +533,7 @@ MonoBehaviour:
   waitTime: 2
   searchDuration: 5
   startDelay: 0
-  maxStepDistance: 20
+  maxStepDistance: 10
   minVolume: 0.05
   maxVolume: 0.8
 --- !u!195 &309536394
@@ -1343,11 +1343,6 @@ MonoBehaviour:
 --- !u!4 &1141863921 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2827753340316541246, guid: 40e9d16dbf847b846a70916d3bacb776, type: 3}
-  m_PrefabInstance: {fileID: 6408321562283850496}
-  m_PrefabAsset: {fileID: 0}
---- !u!82 &1200507074 stripped
-AudioSource:
-  m_CorrespondingSourceObject: {fileID: 5057734702295741007, guid: 40e9d16dbf847b846a70916d3bacb776, type: 3}
   m_PrefabInstance: {fileID: 6408321562283850496}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1254121226
