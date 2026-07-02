@@ -36,7 +36,7 @@ public class EnemyAI : MonoBehaviour
     [Header("Timers")]
     [SerializeField] private float reactionTime = 1.5f;
     [SerializeField] private float waitTime = 2f;
-    [SerializeField] private float searchDuration = 7f;
+    [SerializeField] private float searchDuration = 8f;
     [SerializeField] private float startDelay = 0f;
 
     [Header("Footsteps Distance Volume")]
@@ -44,10 +44,15 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float minVolume = 0.05f;
     [SerializeField] private float maxVolume = 0.8f;
 
+    [Header("Hiding Mechanic")]
+    public bool isPlayerHidden = false;
+
     int patrolIndex;
     float stateTimer;
     bool heardNoise, aiActive, jumpscareTriggered;
     Vector3 targetPos;
+    Vector3 searchSubPoint;
+    bool firstSubPointSelected;
 
     void Start()
     {
@@ -94,22 +99,32 @@ public class EnemyAI : MonoBehaviour
             case State.Spotted: ExecuteSpotted(); break;
             case State.Chase: ExecuteChase(); break;
 
-            case State.Investigate:
+            case State.Search:
                 ExecuteMovement(patrolSpeed, true);
                 agent.SetDestination(targetPos);
-                if (TargetReached(1.6f)) ChangeState(State.Search);
+                UpdateAnimation(agent.velocity.magnitude, false, true);
+
+                if (TargetReached(1.6f))
+                {
+                    firstSubPointSelected = false;
+                    ChangeState(State.Investigate);
+                }
                 break;
 
-            case State.Search:
-                ExecuteSearch();
+            case State.Investigate:
+                ExecuteInvestigateArea();
                 break;
         }
 
-        if (state != State.Spotted && state != State.Search)
+        if (state != State.Spotted && state != State.Investigate && state != State.Search)
             UpdateAnimation(agent.velocity.magnitude, false, false);
     }
 
-    void ChangeState(State newState) { state = newState; stateTimer = 0f; }
+    void ChangeState(State newState)
+    {
+        state = newState;
+        stateTimer = 0f;
+    }
 
     void HandleStartDelay()
     {
@@ -182,6 +197,8 @@ public class EnemyAI : MonoBehaviour
 
     void DetectPlayer()
     {
+        if (isPlayerHidden) return;
+
         Vector3 eye = transform.position + Vector3.up * 1.6f;
         Vector3 dir = (player.position - eye).normalized;
         float dist = Vector3.Distance(transform.position, player.position);
@@ -211,37 +228,64 @@ public class EnemyAI : MonoBehaviour
         if (!HasValidAgent()) return;
         float dist = Vector3.Distance(transform.position, player.position);
         if (dist <= stopDistance && !jumpscareTriggered) { jumpscareTriggered = true; jumpscareManager.TriggerJumpscare(); return; }
+
         ExecuteMovement(chaseSpeed, true);
         agent.SetDestination(player.position);
         targetPos = player.position;
-        if (dist > viewDistance * 1.3f) { heardNoise = false; ChangeState(State.Investigate); }
+
+        if (isPlayerHidden || dist > viewDistance * 1.3f)
+        {
+            heardNoise = false;
+            agent.ResetPath();
+            ChangeState(State.Search);
+        }
     }
 
-    void ExecuteSearch()
+    void ExecuteInvestigateArea()
     {
         if (!HasValidAgent()) return;
 
-        agent.isStopped = true;
-        agent.velocity = Vector3.zero;
-        UpdateAnimation(0, false, true);
+        ExecuteMovement(patrolSpeed, true);
+        UpdateAnimation(agent.velocity.magnitude, false, true);
+
+        if (!firstSubPointSelected || TargetReached(1.2f))
+        {
+            searchSubPoint = GetRandomPointInArea(targetPos, 5f);
+            agent.SetDestination(searchSubPoint);
+            firstSubPointSelected = true;
+        }
 
         if (stateTimer >= searchDuration)
         {
-            agent.isStopped = false;
             MoveToNextPatrolPoint();
         }
     }
 
+    Vector3 GetRandomPointInArea(Vector3 center, float radius)
+    {
+        Vector3 randomDir = Random.insideUnitSphere * radius;
+        randomDir += center;
+        if (NavMesh.SamplePosition(randomDir, out NavMeshHit hit, radius, 1))
+        {
+            return hit.position;
+        }
+        return center;
+    }
+
     public void HearNoise(Vector3 pos)
     {
-        if (state == State.Spotted || state == State.Chase || Vector3.Distance(transform.position, pos) > hearingRange) return;
-        heardNoise = true; targetPos = pos; ChangeState(State.Investigate);
+        if (isPlayerHidden || state == State.Spotted || state == State.Chase || Vector3.Distance(transform.position, pos) > hearingRange) return;
+
+        heardNoise = true;
+        targetPos = pos;
+        if (HasValidAgent()) agent.ResetPath();
+        ChangeState(State.Search);
     }
 
     void MoveToNextPatrolPoint()
     {
         if (patrolPoints.Length == 0) return;
-        if (state == State.Search) heardNoise = false;
+        if (state == State.Investigate) heardNoise = false;
         patrolIndex = Random.Range(0, patrolPoints.Length);
         ExecuteMovement(patrolSpeed, true);
         agent.SetDestination(patrolPoints[patrolIndex].position);
