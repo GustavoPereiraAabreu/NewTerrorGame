@@ -7,34 +7,42 @@ public class EnemyAI : MonoBehaviour
     [Header("Current State")] public State state = State.Patrol;
 
     [Header("References")]
-    public Transform player;
-    public NavMeshAgent agent;
-    public Animator animator;
-    public Transform[] patrolPoints;
-    public AudioSource footstepAudio;
-    public JumpscareController jumpscareManager;
+    [SerializeField] private Transform player;
+    [SerializeField] private NavMeshAgent agent;
+    [SerializeField] private Animator animator;
+    [SerializeField] private Transform[] patrolPoints;
+    [SerializeField] private JumpscareController jumpscareManager;
+
+    [Header("Audio Sources")]
+    [SerializeField] private AudioSource footstepAudio;
+    [SerializeField] private AudioSource chaseMusicAudio;
+
+    [Header("Audio Clips")]
+    [SerializeField] private AudioClip walkStepsClip;
+    [SerializeField] private AudioClip runStepsClip;
 
     [Header("Vision & Hearing")]
-    public float viewDistance = 12f;
-    public float viewAngle = 100f;
-    public float hearingRange = 10f;
-    public LayerMask visionMask, obstacleMask;
+    [SerializeField] private float viewDistance = 12f;
+    [SerializeField] private float viewAngle = 100f;
+    [SerializeField] private float hearingRange = 10f;
+    [SerializeField] private LayerMask visionMask;
+    [SerializeField] private LayerMask obstacleMask;
 
     [Header("Movement Settings")]
-    public float patrolSpeed = 2f;
-    public float chaseSpeed = 4f;
-    public float stopDistance = 2.2f;
+    [SerializeField] private float patrolSpeed = 2f;
+    [SerializeField] private float chaseSpeed = 4f;
+    [SerializeField] private float stopDistance = 2.2f;
 
     [Header("Timers")]
-    public float reactionTime = 1.5f;
-    public float waitTime = 2f;
-    public float searchDuration = 7f;
-    public float startDelay = 0f;
+    [SerializeField] private float reactionTime = 1.5f;
+    [SerializeField] private float waitTime = 2f;
+    [SerializeField] private float searchDuration = 7f;
+    [SerializeField] private float startDelay = 0f;
 
-    [Header("Footsteps")]
-    public float maxStepDistance = 20f;
-    public float minVolume = 0.05f;
-    public float maxVolume = 0.8f;
+    [Header("Footsteps Distance Volume")]
+    [SerializeField] private float maxStepDistance = 20f;
+    [SerializeField] private float minVolume = 0.05f;
+    [SerializeField] private float maxVolume = 0.8f;
 
     int patrolIndex;
     float stateTimer;
@@ -45,57 +53,55 @@ public class EnemyAI : MonoBehaviour
     {
         if (!agent) agent = GetComponent<NavMeshAgent>();
         if (!animator) animator = GetComponent<Animator>();
-        if (footstepAudio) { footstepAudio.loop = true; footstepAudio.volume = minVolume; footstepAudio.Play(); }
+
+        if (footstepAudio)
+        {
+            footstepAudio.loop = true;
+            footstepAudio.clip = walkStepsClip;
+            footstepAudio.volume = minVolume;
+            footstepAudio.Play();
+        }
+
+        if (chaseMusicAudio)
+        {
+            chaseMusicAudio.loop = true;
+            chaseMusicAudio.Stop();
+        }
+
         MoveToNextPatrolPoint();
     }
-
-
 
     void Update()
     {
         if (!aiActive) { HandleStartDelay(); return; }
-        if (jumpscareTriggered) { UpdateAnimation(0, false, false); return; }
-        UpdateFootsteps();
+        if (jumpscareTriggered) { StopAllEnemyAudio(); UpdateAnimation(0, false, false); return; }
+
+        UpdateAudioSystems();
         if (state != State.Spotted && state != State.Chase) DetectPlayer();
         stateTimer += Time.deltaTime;
 
         switch (state)
         {
-
             case State.Patrol:
-
                 ExecuteMovement(patrolSpeed, true);
-
                 if (TargetReached(1.6f))
-
                 {
-
                     if (agent.velocity.magnitude > 0.1f) stateTimer = 0f;
-
                     if (stateTimer >= waitTime) MoveToNextPatrolPoint();
-
                 }
-
                 break;
 
             case State.Spotted: ExecuteSpotted(); break;
-
             case State.Chase: ExecuteChase(); break;
 
             case State.Investigate:
-
                 ExecuteMovement(patrolSpeed, true);
-
                 agent.SetDestination(targetPos);
-
                 if (TargetReached(1.6f)) ChangeState(State.Search);
-
                 break;
 
             case State.Search:
-
                 ExecuteSearch();
-
                 break;
         }
 
@@ -104,6 +110,7 @@ public class EnemyAI : MonoBehaviour
     }
 
     void ChangeState(State newState) { state = newState; stateTimer = 0f; }
+
     void HandleStartDelay()
     {
         stateTimer += Time.deltaTime;
@@ -111,19 +118,70 @@ public class EnemyAI : MonoBehaviour
         if (stateTimer >= startDelay) { aiActive = true; if (HasValidAgent()) agent.isStopped = false; stateTimer = 0f; }
     }
 
-    void UpdateFootsteps()
+    void UpdateAudioSystems()
     {
-        if (!footstepAudio || !player) return;
-        float t = Mathf.Clamp01(1 - (Vector3.Distance(transform.position, player.position) / maxStepDistance));
-        footstepAudio.volume = Mathf.Lerp(minVolume, maxVolume, t);
+        if (!player) return;
+
+        if (footstepAudio)
+        {
+            float distance = Vector3.Distance(transform.position, player.position);
+            float targetVolume = Mathf.Clamp01(1 - (distance / maxStepDistance));
+            float currentVolume = Mathf.Lerp(minVolume, maxVolume, targetVolume);
+
+            if (agent.velocity.magnitude <= 0.1f && state != State.Spotted)
+            {
+                currentVolume = 0f;
+            }
+
+            footstepAudio.volume = currentVolume;
+
+            if (state == State.Spotted || state == State.Chase)
+            {
+                if (footstepAudio.clip != runStepsClip && runStepsClip != null)
+                {
+                    footstepAudio.clip = runStepsClip;
+                    if (currentVolume > 0f && !footstepAudio.isPlaying) footstepAudio.Play();
+                }
+            }
+            else
+            {
+                if (footstepAudio.clip != walkStepsClip && walkStepsClip != null)
+                {
+                    footstepAudio.clip = walkStepsClip;
+                    if (currentVolume > 0f && !footstepAudio.isPlaying) footstepAudio.Play();
+                }
+            }
+
+            if (currentVolume > 0f && !footstepAudio.isPlaying)
+            {
+                footstepAudio.Play();
+            }
+        }
+
+        if (state == State.Spotted || state == State.Chase)
+        {
+            if (chaseMusicAudio && !chaseMusicAudio.isPlaying)
+            {
+                chaseMusicAudio.Play();
+            }
+        }
+        else
+        {
+            if (chaseMusicAudio && chaseMusicAudio.isPlaying)
+            {
+                chaseMusicAudio.Stop();
+            }
+        }
     }
 
-
+    void StopAllEnemyAudio()
+    {
+        if (footstepAudio) footstepAudio.Stop();
+        if (chaseMusicAudio) chaseMusicAudio.Stop();
+    }
 
     void DetectPlayer()
-
     {
-
         Vector3 eye = transform.position + Vector3.up * 1.6f;
         Vector3 dir = (player.position - eye).normalized;
         float dist = Vector3.Distance(transform.position, player.position);
@@ -135,14 +193,11 @@ public class EnemyAI : MonoBehaviour
                 targetPos = player.position;
                 ChangeState(State.Spotted);
             }
-
         }
-
     }
 
     void ExecuteSpotted()
     {
-
         if (!HasValidAgent()) return;
         agent.isStopped = true; agent.velocity = Vector3.zero; agent.updateRotation = false;
         Vector3 lookDir = Vector3.ProjectOnPlane(player.position - transform.position, Vector3.up);
@@ -191,7 +246,6 @@ public class EnemyAI : MonoBehaviour
         ExecuteMovement(patrolSpeed, true);
         agent.SetDestination(patrolPoints[patrolIndex].position);
         ChangeState(State.Patrol);
-
     }
 
     void ExecuteMovement(float speed, bool updateRot)
@@ -215,8 +269,8 @@ public class EnemyAI : MonoBehaviour
 
     public void FreezeEnemy()
     {
+        StopAllEnemyAudio();
         if (HasValidAgent()) { agent.isStopped = true; agent.ResetPath(); agent.enabled = false; }
         UpdateAnimation(0, false, false); enabled = false;
     }
 }
-
