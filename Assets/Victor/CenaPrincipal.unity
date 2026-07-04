@@ -1834,6 +1834,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6cc6937ca4302954fafebcbba6c3c08a, type: 3}
+--- !u!1 &1574889868 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 366232256136195067, guid: 6cc6937ca4302954fafebcbba6c3c08a, type: 3}
+  m_PrefabInstance: {fileID: 1574889867}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1805799465
 GameObject:
   m_ObjectHideFlags: 0
@@ -2539,7 +2544,7 @@ MonoBehaviour:
   playerRb: {fileID: 47601941}
   playerScripts: []
   playerMainCamera: {fileID: 558810671}
-  jumpscareCamera: {fileID: 0}
+  jumpscareCamera: {fileID: 1574889868}
   enemyAIScript: {fileID: 0}
   deathScreen: {fileID: 321351219}
   sound: {fileID: 64881038}
