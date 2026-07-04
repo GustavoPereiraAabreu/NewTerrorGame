@@ -4,6 +4,7 @@ public class DoorLock : MonoBehaviour
 {
     [SerializeField] private string requiredItemID;
     [SerializeField] private Animator doorAnimator;
+    [SerializeField] private GameObject interactionText;
 
     public void TryUnlock(PlayerPickup player)
     {
@@ -26,6 +27,10 @@ public class DoorLock : MonoBehaviour
         Debug.Log("Abrindo porta");
 
         doorAnimator.SetTrigger("Open");
+
+        // Esconde o texto de interação
+        if (interactionText != null)
+            interactionText.SetActive(false);
 
         Destroy(heldItem.gameObject);
 
