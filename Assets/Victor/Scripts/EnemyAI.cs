@@ -16,10 +16,21 @@ public class EnemyAI : MonoBehaviour
     [Header("Audio Sources")]
     [SerializeField] private AudioSource footstepAudio;
     [SerializeField] private AudioSource chaseMusicAudio;
+    [SerializeField] private AudioSource voiceAudio;
 
-    [Header("Audio Clips")]
+    [Header("Audio Clips - Movement")]
     [SerializeField] private AudioClip walkStepsClip;
     [SerializeField] private AudioClip runStepsClip;
+
+    [Header("Voice Lines (Falas do Monstro)")]
+    [SerializeField] private AudioClip[] calmLines;        
+    [SerializeField] private AudioClip[] searchLines;     
+    [SerializeField] private AudioClip[] investigateLines;
+    [SerializeField] private AudioClip[] chaseLines;
+
+    [Header("Voice Settings")]
+    [SerializeField] private float minTimeBetweenLines = 7f;
+    [SerializeField] private float maxTimeBetweenLines = 15f;
 
     [Header("Vision & Hearing")]
     [SerializeField] private float viewDistance = 12f;
@@ -57,6 +68,9 @@ public class EnemyAI : MonoBehaviour
     bool firstSubPointSelected;
     bool caughtPlayerHiding = false;
 
+    float voiceTimer;
+    float nextVoiceDelay;
+
     void Start()
     {
         if (!agent) agent = GetComponent<NavMeshAgent>();
@@ -76,6 +90,7 @@ public class EnemyAI : MonoBehaviour
             chaseMusicAudio.Stop();
         }
 
+        ResetVoiceTimer();
         MoveToNextPatrolPoint();
     }
 
@@ -85,6 +100,8 @@ public class EnemyAI : MonoBehaviour
         if (jumpscareTriggered) { StopAllEnemyAudio(); UpdateAnimation(0, false, false, false); return; }
 
         UpdateAudioSystems();
+        HandleVoiceLines();
+
         if (state != State.Spotted && state != State.Chase && !caughtPlayerHiding) DetectPlayer();
         stateTimer += Time.deltaTime;
 
@@ -199,10 +216,63 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    void HandleVoiceLines()
+    {
+        if (!voiceAudio) return;
+
+        voiceTimer += Time.deltaTime;
+
+        if (voiceTimer >= nextVoiceDelay)
+        {
+            if (!voiceAudio.isPlaying)
+            {
+                switch (state)
+                {
+                    case State.Chase:
+                    case State.Spotted:
+                        PlayRandomLine(chaseLines);
+                        break;
+
+                    case State.Search:
+                        PlayRandomLine(searchLines);
+                        break;
+
+                    case State.Investigate:
+                        PlayRandomLine(investigateLines);
+                        break;
+
+                    default:
+                        PlayRandomLine(calmLines);
+                        break;
+                }
+            }
+            ResetVoiceTimer();
+        }
+    }
+
+    void PlayRandomLine(AudioClip[] linesArray)
+    {
+        if (linesArray == null || linesArray.Length == 0) return;
+
+        int randomIndex = Random.Range(0, linesArray.Length);
+        if (linesArray[randomIndex] != null)
+        {
+            voiceAudio.clip = linesArray[randomIndex];
+            voiceAudio.Play();
+        }
+    }
+
+    void ResetVoiceTimer()
+    {
+        voiceTimer = 0f;
+        nextVoiceDelay = Random.Range(minTimeBetweenLines, maxTimeBetweenLines);
+    }
+
     void StopAllEnemyAudio()
     {
         if (footstepAudio) footstepAudio.Stop();
         if (chaseMusicAudio) chaseMusicAudio.Stop();
+        if (voiceAudio) voiceAudio.Stop();
     }
 
     void DetectPlayer()
@@ -218,6 +288,9 @@ public class EnemyAI : MonoBehaviour
             if (Physics.Raycast(eye, dir, out RaycastHit hit, viewDistance, visionMask) && hit.collider.CompareTag("Player") && !Physics.Raycast(eye, dir, dist, obstacleMask))
             {
                 targetPos = player.position;
+
+                if (voiceAudio && !voiceAudio.isPlaying) PlayRandomLine(chaseLines);
+
                 ChangeState(State.Spotted);
             }
         }
@@ -258,6 +331,9 @@ public class EnemyAI : MonoBehaviour
         {
             heardNoise = false;
             agent.ResetPath();
+
+            if (voiceAudio) { voiceAudio.Stop(); PlayRandomLine(searchLines); ResetVoiceTimer(); }
+
             ChangeState(State.Search);
         }
     }
@@ -300,6 +376,9 @@ public class EnemyAI : MonoBehaviour
         heardNoise = true;
         targetPos = pos;
         if (HasValidAgent()) agent.ResetPath();
+
+        if (voiceAudio) { voiceAudio.Stop(); PlayRandomLine(searchLines); ResetVoiceTimer(); }
+
         ChangeState(State.Search);
     }
 
@@ -326,7 +405,6 @@ public class EnemyAI : MonoBehaviour
     {
         if (!animator) return;
 
-        
         animator.SetBool("isWalking", speed > 0.1f && state != State.Chase && state != State.Investigate);
         animator.SetBool("isRun", speed > 0.1f && state == State.Chase);
         animator.SetBool("isSpotted", isSpotted);
