@@ -1,5 +1,5 @@
-using TMPro;
 using UnityEngine;
+using TMPro;
 
 public class TimeManager : MonoBehaviour
 {
@@ -18,7 +18,6 @@ public class TimeManager : MonoBehaviour
 
     private int currentHour = 12;
     private float hourTimer;
-    private float elapsedTime = 0f;
     private bool gameEnded = false;
 
     void Start()
@@ -33,7 +32,6 @@ public class TimeManager : MonoBehaviour
     {
         if (gameEnded) return;
 
-        elapsedTime += Time.deltaTime;
         hourTimer += Time.deltaTime;
 
         UpdateRecordingTimer();
@@ -49,11 +47,12 @@ public class TimeManager : MonoBehaviour
     {
         if (recordingText != null)
         {
-            int hours = Mathf.FloorToInt(elapsedTime / 3600);
-            int minutes = Mathf.FloorToInt((elapsedTime % 3600) / 60);
-            int seconds = Mathf.FloorToInt(elapsedTime % 60);
+            float progressOfCurrentHour = hourTimer / secondsPerHour;
+            int minutes = Mathf.FloorToInt(progressOfCurrentHour * 60f);
 
-            recordingText.text = $"{hours:00}:{minutes:00}:{seconds:00}";
+            if (minutes > 59) minutes = 59;
+
+            recordingText.text = $"{currentHour:00}:{minutes:00}";
         }
     }
 
