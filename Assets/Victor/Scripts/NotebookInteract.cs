@@ -2,16 +2,13 @@ using UnityEngine;
 
 public class NotebookInteract : MonoBehaviour
 {
-    [Header("Referências")]
     public Camera playerCamera;
     public GameObject painelNotebook;
     public GameObject interactionText;
 
-    [Header("Scripts do Player")]
     public FirstPersonMovement playerMovement;
     public FirstPersonLook playerLook;
 
-    [Header("Interação")]
     public float distanciaInteracao = 3f;
 
     private bool aberto = false;
@@ -19,26 +16,19 @@ public class NotebookInteract : MonoBehaviour
     void Start()
     {
         painelNotebook.SetActive(false);
-
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
     void Update()
     {
-        if (aberto)
-            return;
+        if (aberto) return;
 
-        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-
-        if (Physics.Raycast(ray, out RaycastHit hit, distanciaInteracao))
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, distanciaInteracao))
         {
-            if (hit.transform == transform)
+            if (hit.transform == transform && Input.GetKeyDown(KeyCode.E))
             {
-                if (Input.GetKeyDown(KeyCode.E))
-                {
-                    AbrirNotebook();
-                }
+                AbrirNotebook();
             }
         }
     }
@@ -46,10 +36,9 @@ public class NotebookInteract : MonoBehaviour
     public void AbrirNotebook()
     {
         aberto = true;
-
         painelNotebook.SetActive(true);
 
-        if (interactionText != null)
+        if (interactionText)
             interactionText.SetActive(false);
 
         playerMovement.enabled = false;
@@ -59,11 +48,9 @@ public class NotebookInteract : MonoBehaviour
         Cursor.visible = true;
     }
 
-    // Chame essa função no botão X
     public void FecharNotebook()
     {
         aberto = false;
-
         painelNotebook.SetActive(false);
 
         playerMovement.enabled = true;
