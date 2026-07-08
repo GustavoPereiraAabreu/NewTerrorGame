@@ -24,7 +24,9 @@ public class TimeManager : MonoBehaviour
     {
         Time.timeScale = 1f;
 
-        if (winScreen) winScreen.SetActive(false);
+        if (winScreen != null)
+            winScreen.SetActive(false);
+
         UpdateVisualTime();
     }
 
@@ -38,49 +40,40 @@ public class TimeManager : MonoBehaviour
 
         if (hourTimer >= secondsPerHour)
         {
-            hourTimer = 0f;
+            hourTimer = 0;
             AdvanceHour();
         }
     }
 
     void UpdateRecordingTimer()
     {
-        if (recordingText != null)
-        {
-            float progressOfCurrentHour = hourTimer / secondsPerHour;
-            int minutes = Mathf.FloorToInt(progressOfCurrentHour * 60f);
+        if (recordingText == null) return;
 
-            if (minutes > 59) minutes = 59;
+        int minutes = Mathf.FloorToInt((hourTimer / secondsPerHour) * 60);
 
-            recordingText.text = $"{currentHour:00}:{minutes:00}";
-        }
+        if (minutes > 59)
+            minutes = 59;
+
+        recordingText.text = $"{currentHour:00}:{minutes:00}";
     }
 
     void AdvanceHour()
     {
-        if (currentHour == 12)
-        {
+        currentHour++;
+
+        if (currentHour == 13)
             currentHour = 1;
-        }
-        else
-        {
-            currentHour++;
-        }
 
         UpdateVisualTime();
 
         if (currentHour == 6)
-        {
             WinGame();
-        }
     }
 
     void UpdateVisualTime()
     {
         if (timeText != null)
-        {
-            timeText.text = currentHour.ToString() + " AM";
-        }
+            timeText.text = currentHour + " AM";
     }
 
     void WinGame()
@@ -88,23 +81,23 @@ public class TimeManager : MonoBehaviour
         gameEnded = true;
 
         if (enemyAIScript != null)
-        {
             enemyAIScript.FreezeEnemy();
-        }
 
-        if (playerRb)
+        if (playerRb != null)
         {
             playerRb.linearVelocity = Vector3.zero;
             playerRb.angularVelocity = Vector3.zero;
             playerRb.isKinematic = true;
         }
 
-        foreach (var s in playerScripts)
+        foreach (MonoBehaviour script in playerScripts)
         {
-            if (s) s.enabled = false;
+            if (script != null)
+                script.enabled = false;
         }
 
-        if (winScreen) winScreen.SetActive(true);
+        if (winScreen != null)
+            winScreen.SetActive(true);
 
         Time.timeScale = 0f;
 
