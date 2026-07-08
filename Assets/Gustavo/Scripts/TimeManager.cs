@@ -26,8 +26,6 @@ public class TimeManager : MonoBehaviour
 
         if (winScreen) winScreen.SetActive(false);
         UpdateVisualTime();
-
-        enabled = false;
     }
 
     void Update()

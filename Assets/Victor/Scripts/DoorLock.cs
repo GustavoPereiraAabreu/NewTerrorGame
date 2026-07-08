@@ -12,30 +12,27 @@ public class DoorLock : MonoBehaviour
     [SerializeField] private GameObject padlock;
     [SerializeField] private NavMeshObstacle navObstacle;
 
-    [Header("Time System Trigger")]
-    [SerializeField] private TimeManager timeManager;
-
     public void TryUnlock(PlayerPickup player)
     {
+        Debug.Log("Tentou destrancar");
+
         ItemPickup heldItem = player.GetHeldItem();
 
         if (heldItem == null)
-        {;
+        {
+            Debug.Log("Sem item");
             return;
         }
 
         if (heldItem.itemID != requiredItemID)
-        { 
+        {
+            Debug.Log("Item errado: " + heldItem.itemID);
             return;
         }
 
+        Debug.Log("Abrindo porta");
 
         doorAnimator.SetTrigger("Open");
-
-        if (timeManager != null)
-        {
-            timeManager.enabled = true;
-        }
 
         if (interactionText != null)
             interactionText.SetActive(false);
