@@ -5,81 +5,122 @@ public class HidingSpot : MonoBehaviour
     [Header("References")]
     [SerializeField] private EnemyAI enemyAI;
     [SerializeField] private Transform hidingPosition;
+    [SerializeField] private Transform exitPoint;
+    [SerializeField] private Camera playerCamera;
+    [SerializeField] private OutlineDetector outlineDetector;
+
+    [Header("Player")]
+    [SerializeField] private FirstPersonMovement playerMovement;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip hideSound;
 
     [Header("Settings")]
     [SerializeField] private KeyCode interactionKey = KeyCode.E;
+    [SerializeField] private float interactionDistance = 3f;
 
     private Transform playerTransform;
-    private MonoBehaviour playerMovementScript;
-    private Collider playerCollider;
+    private CharacterController characterController;
 
     private bool isPlayerInside = false;
-    private Vector3 originalPlayerPosition;
-    private bool canInteract = false;
+
+    void Start()
+    {
+        playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+        characterController = playerTransform.GetComponent<CharacterController>();
+    }
 
     void Update()
     {
-        if (canInteract && Input.GetKeyDown(interactionKey))
+        // Dentro do armário
+        if (isPlayerInside)
         {
-            if (isPlayerInside)
+            if (Input.GetKeyDown(interactionKey))
+            {
                 GetOut();
-            else
-                Hide();
+            }
+
+            return;
+        }
+
+
+        // Fora do armário
+        if (Physics.Raycast(playerCamera.transform.position,
+                            playerCamera.transform.forward,
+                            out RaycastHit hit,
+                            interactionDistance))
+        {
+            if (hit.transform == transform)
+            {
+                if (Input.GetKeyDown(interactionKey))
+                {
+                    Hide();
+                }
+            }
         }
     }
+
 
     void Hide()
     {
         isPlayerInside = true;
 
+
+        if (outlineDetector != null)
+            outlineDetector.HideInteraction();
+
+
         if (enemyAI != null)
-        {
             enemyAI.isPlayerHidden = true;
-        }
 
-        originalPlayerPosition = playerTransform.position;
 
-        if (playerMovementScript) playerMovementScript.enabled = false;
+        if (audioSource != null && hideSound != null)
+            audioSource.PlayOneShot(hideSound);
 
-        CharacterController cc = playerTransform.GetComponent<CharacterController>();
-        if (cc) cc.enabled = false;
+
+        if (playerMovement != null)
+            playerMovement.enabled = false;
+
+
+        if (characterController != null)
+            characterController.enabled = false;
+
 
         playerTransform.position = hidingPosition.position;
         playerTransform.rotation = hidingPosition.rotation;
+
+
+        if (characterController != null)
+            characterController.enabled = true;
     }
+
 
     void GetOut()
     {
         isPlayerInside = false;
 
+
         if (enemyAI != null)
-        {
             enemyAI.isPlayerHidden = false;
-        }
 
-        playerTransform.position = originalPlayerPosition;
 
-        CharacterController cc = playerTransform.GetComponent<CharacterController>();
-        if (cc) cc.enabled = true;
+        if (characterController != null)
+            characterController.enabled = false;
 
-        if (playerMovementScript) playerMovementScript.enabled = true;
-    }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
+        if (exitPoint != null)
         {
-            canInteract = true;
-            playerTransform = other.transform;
-            playerMovementScript = other.GetComponent<MonoBehaviour>();
+            playerTransform.position = exitPoint.position;
+            playerTransform.rotation = exitPoint.rotation;
         }
-    }
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            canInteract = false;
-        }
+
+        if (characterController != null)
+            characterController.enabled = true;
+
+
+        if (playerMovement != null)
+            playerMovement.enabled = true;
     }
 }

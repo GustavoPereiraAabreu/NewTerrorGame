@@ -7,7 +7,7 @@ public class OutlineDetector : MonoBehaviour
 
     private Outline currentOutline;
 
-    private void Start()
+    void Start()
     {
         if (interactionText != null)
             interactionText.SetActive(false);
@@ -27,30 +27,27 @@ public class OutlineDetector : MonoBehaviour
                     currentOutline.enabled = false;
 
                 currentOutline = outline;
-
-                if (currentOutline != null)
-                {
-                    currentOutline.enabled = true;
-
-                    if (interactionText != null)
-                        interactionText.SetActive(true);
-                }
-                else
-                {
-                    if (interactionText != null)
-                        interactionText.SetActive(false);
-                }
             }
 
-            // Interação só acontece se o Raycast acertou algo
+            if (currentOutline != null)
+            {
+                currentOutline.enabled = true;
+
+                if (interactionText != null)
+                    interactionText.SetActive(true);
+            }
+            else
+            {
+                if (interactionText != null)
+                    interactionText.SetActive(false);
+            }
+
             if (Input.GetKeyDown(KeyCode.E))
             {
                 TVInteraction tv = hit.collider.GetComponentInParent<TVInteraction>();
 
                 if (tv != null)
-                {
                     tv.EnterTV();
-                }
             }
         }
         else
@@ -60,6 +57,21 @@ public class OutlineDetector : MonoBehaviour
                 currentOutline.enabled = false;
                 currentOutline = null;
             }
+
+            if (interactionText != null)
+                interactionText.SetActive(false);
+        }
+    }
+
+    public void HideInteraction()
+    {
+        if (interactionText != null)
+            interactionText.SetActive(false);
+
+        if (currentOutline != null)
+        {
+            currentOutline.enabled = false;
+            currentOutline = null;
         }
     }
 }

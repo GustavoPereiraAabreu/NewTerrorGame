@@ -16,15 +16,20 @@ public class NotebookInteract : MonoBehaviour
     void Start()
     {
         painelNotebook.SetActive(false);
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
     void Update()
     {
-        if (aberto) return;
+        if (aberto)
+            return;
 
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, distanciaInteracao))
+        if (Physics.Raycast(playerCamera.transform.position,
+                            playerCamera.transform.forward,
+                            out RaycastHit hit,
+                            distanciaInteracao))
         {
             if (hit.transform == transform && Input.GetKeyDown(KeyCode.E))
             {
@@ -36,13 +41,17 @@ public class NotebookInteract : MonoBehaviour
     public void AbrirNotebook()
     {
         aberto = true;
+
         painelNotebook.SetActive(true);
 
-        if (interactionText)
+        if (interactionText != null)
             interactionText.SetActive(false);
 
-        playerMovement.enabled = false;
-        playerLook.LockLook();
+        if (playerMovement != null)
+            playerMovement.enabled = false;
+
+        if (playerLook != null)
+            playerLook.LockLook();
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -51,10 +60,14 @@ public class NotebookInteract : MonoBehaviour
     public void FecharNotebook()
     {
         aberto = false;
+
         painelNotebook.SetActive(false);
 
-        playerMovement.enabled = true;
-        playerLook.UnlockLook();
+        if (playerMovement != null)
+            playerMovement.enabled = true;
+
+        if (playerLook != null)
+            playerLook.UnlockLook();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
