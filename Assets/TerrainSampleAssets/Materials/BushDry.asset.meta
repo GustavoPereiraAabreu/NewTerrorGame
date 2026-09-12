@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 23a0cd5c8b80df2478dab93ad1ec2700
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 145808
+  packageName: Terrain Sample Asset Pack
+  packageVersion: 2.0.1
+  assetPath: Assets/TerrainSampleAssets/Materials/BushDry.asset
+  uploadId: 511657
